@@ -17,12 +17,12 @@ class ProductViewController: UIViewController, UICollectionViewDataSource, UICol
     
     @IBOutlet weak var productCell: UICollectionView!
 
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return data.productTitle.count
     }
     
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let cell: CollectionViewCell = collectionView.dequeueReusableCellWithReuseIdentifier("Cell", forIndexPath: indexPath) as! CollectionViewCell
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell: CollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as! CollectionViewCell
         
         // product cell attributes
         cell.labelNameCell.text = data.productTitle[indexPath.row]
@@ -43,18 +43,18 @@ class ProductViewController: UIViewController, UICollectionViewDataSource, UICol
         
         // add/remove button logic
         cell.addToCartButton.tag = indexPath.row
-        cell.addToCartButton.addTarget(self, action: "addToCart:", forControlEvents: .TouchUpInside)
+        cell.addToCartButton.addTarget(self, action: #selector(ProductViewController.addToCart(_:)), for: .touchUpInside)
         
-        cell.removeFromCartButton.hidden = true
+        cell.removeFromCartButton.isHidden = true
         cell.removeFromCartButton.tag = indexPath.row
-        cell.removeFromCartButton.addTarget(self, action: "removeFromCart:", forControlEvents: .TouchUpInside)
+        cell.removeFromCartButton.addTarget(self, action: #selector(ProductViewController.removeFromCart(_:)), for: .touchUpInside)
         
-        if contains(cart.cartProducts, indexPath.row) {
-            cell.removeFromCartButton.hidden = false
-            cell.addToCartButton.hidden = true
+        if cart.cartProducts.contains( indexPath.row) {
+            cell.removeFromCartButton.isHidden = false
+            cell.addToCartButton.isHidden = true
         } else {
-            cell.removeFromCartButton.hidden = true
-            cell.addToCartButton.hidden = false
+            cell.removeFromCartButton.isHidden = true
+            cell.addToCartButton.isHidden = false
         }
         
         // decorative line
@@ -66,7 +66,7 @@ class ProductViewController: UIViewController, UICollectionViewDataSource, UICol
     // add and remove from cart
     @IBOutlet weak var productErrorMessage: UILabel!
     
-    func addToCart(sender: UIButton) {
+    func addToCart(_ sender: UIButton) {
         let selectedProduct = sender.tag
         productErrorMessage.text = ""
         self.checkStock(selectedProduct)
@@ -74,9 +74,9 @@ class ProductViewController: UIViewController, UICollectionViewDataSource, UICol
         productCell.reloadData()
     }
     
-    func removeFromCart(sender: UIButton) {
+    func removeFromCart(_ sender: UIButton) {
         let selectedProduct = sender.tag
-        cart.removeObject(selectedProduct, fromArray: &cart.cartProducts)
+        cart.removeObject(object: selectedProduct, array: &cart.cartProducts)
         checkVouchersAgain()
         returnStock(selectedProduct)
         updateCartDisplay()
@@ -84,8 +84,8 @@ class ProductViewController: UIViewController, UICollectionViewDataSource, UICol
     }
     
     // stock logic
-    func checkStock(selectedProduct: Int) {
-        var resultOfStockCheck = cart.checkStock(selectedProduct)
+    func checkStock(_ selectedProduct: Int) {
+        let resultOfStockCheck = cart.checkStock(selectedProduct)
         
         if resultOfStockCheck.accepted {
             cart.cartProducts.append(selectedProduct)
@@ -95,8 +95,8 @@ class ProductViewController: UIViewController, UICollectionViewDataSource, UICol
         }
     }
     
-    func returnStock(selectedProduct: Int) {
-        var resultOfReturnStock = cart.returnStock(selectedProduct)
+    func returnStock(_ selectedProduct: Int) {
+        let resultOfReturnStock = cart.returnStock(selectedProduct)
         data.productStock = resultOfReturnStock
     }
     
@@ -104,7 +104,7 @@ class ProductViewController: UIViewController, UICollectionViewDataSource, UICol
     func checkVouchersAgain() {
         for item in cart.cartVouchers {
             if cart.checkVoucher(item) == false {
-                cart.removeObject(item, fromArray: &cart.cartVouchers)
+                cart.removeObject(object: item, array: &cart.cartVouchers)
             }
         }
     }
@@ -114,15 +114,15 @@ class ProductViewController: UIViewController, UICollectionViewDataSource, UICol
     @IBOutlet weak var cartTotalDisplay: UILabel!
     
     func updateCartDisplay() {
-        cartButton.setTitle("\(cart.cartProducts.count)", forState: UIControlState.Normal)
+        cartButton.setTitle("\(cart.cartProducts.count)", for: UIControlState())
         cart.totalCart()
         cartTotalDisplay.text = "£" + String.localizedStringWithFormat("%.2f", cart.total)
     }
     
     // pass cart data between views
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject!) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any!) {
         if (segue.identifier == "segueToVouchers") {
-            var svc = segue.destinationViewController as! VoucherViewController;
+            let svc = segue.destination as! VoucherViewController;
             
             svc.passedTotal = cartTotalDisplay.text
             svc.passedCartContents = cart.cartProducts
@@ -139,7 +139,7 @@ class ProductViewController: UIViewController, UICollectionViewDataSource, UICol
         
         if passedTotalFromVouchers != nil {
             cartTotalDisplay.text = passedTotalFromVouchers
-            cartButton.setTitle("\(passedCartContentsFromVouchers.count)", forState: UIControlState.Normal)
+            cartButton.setTitle("\(passedCartContentsFromVouchers.count)", for: UIControlState())
             cart.cartProducts = passedCartContentsFromVouchers
             cart.cartVouchers = passedCartVouchersFromVouchers
         }

@@ -15,22 +15,22 @@ class CartBrain {
     var productData = ProductList()
     var voucherData = VoucherList()
     
-    func removeObject<T : Equatable>(object: T, inout fromArray array: [T])
+    func removeObject<T : Equatable>( object: T,  array: inout [T])
     {
-        var index = find(array, object)
-        array.removeAtIndex(index!)
+        let index = array.index( of: object)
+        array.remove(at: index!)
     }
 
-    func checkStock(selectedProduct: Int) -> (newStockList: [String], accepted: Bool) {
+    func checkStock(_ selectedProduct: Int) -> (newStockList: [String], accepted: Bool) {
         var result: (newStockList:[String], accepted: Bool)
         
         result.newStockList = []
         result.accepted = false
         
-        var availableStock = (productData.productStock[selectedProduct]).toInt()!
+        let availableStock = Int(productData.productStock[selectedProduct])
         
-        if availableStock > 0 {
-            productData.productStock[selectedProduct] = "\(availableStock - 1)"
+        if availableStock! > 0 {
+            productData.productStock[selectedProduct] = "\(availableStock! - 1)"
             result.newStockList = productData.productStock
             result.accepted = true
             
@@ -57,7 +57,7 @@ class CartBrain {
         total = productTotal - voucherTotal
     }
     
-    func checkVoucher(selectedVoucher: Int) -> Bool {
+    func checkVoucher(_ selectedVoucher: Int) -> Bool {
         var accepted: Bool = false
         totalCart()
         if Int(productTotal) > voucherData.voucherMinimum[selectedVoucher] {
@@ -71,9 +71,9 @@ class CartBrain {
             for item in cartProducts {
                 cartCategories.append(productData.productCategory[item])
             }
-            var categoryToMatch = voucherData.voucherRequiredProductCategory[selectedVoucher]
+            let categoryToMatch = voucherData.voucherRequiredProductCategory[selectedVoucher]
             
-            if find(cartCategories, categoryToMatch) != nil && accepted != false {
+            if cartCategories.index( of: categoryToMatch) != nil && accepted != false {
                 accepted = true
             } else {
                 accepted = false
@@ -83,8 +83,8 @@ class CartBrain {
         return accepted
     }
     
-    func returnStock(selectedProduct: Int) -> [String] {
-        var availableStock = (productData.productStock[selectedProduct]).toInt()!
+    func returnStock(_ selectedProduct: Int) -> [String] {
+        let availableStock = Int((productData.productStock[selectedProduct]))!
         productData.productStock[selectedProduct] = "\(availableStock + 1)"
         return productData.productStock
     }

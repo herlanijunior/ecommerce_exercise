@@ -16,31 +16,31 @@ class VoucherViewController: UIViewController, UICollectionViewDataSource, UICol
 
     @IBOutlet weak var voucherCollection: UICollectionView!
 
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return data.voucherDisplayCategory.count
     }
     
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        let voucherCell = collectionView.dequeueReusableCellWithReuseIdentifier("voucherCell", forIndexPath: indexPath) as! VoucherCollectionViewCell
+        let voucherCell = collectionView.dequeueReusableCell(withReuseIdentifier: "voucherCell", for: indexPath) as! VoucherCollectionViewCell
         
         voucherCell.voucherCategory.text = data.voucherDisplayCategory[indexPath.row]
         voucherCell.voucherConditions.text = data.voucherConditionDescription[indexPath.row]
         voucherCell.voucherImage.image = UIImage(named: data.voucherImage[indexPath.row])
         
         voucherCell.addToCartButton.tag = indexPath.row
-        voucherCell.addToCartButton.addTarget(self, action: "addToCart:", forControlEvents: .TouchUpInside)
+        voucherCell.addToCartButton.addTarget(self, action: #selector(VoucherViewController.addToCart(_:)), for: .touchUpInside)
         
-        voucherCell.removeFromCartButton.hidden = true
+        voucherCell.removeFromCartButton.isHidden = true
         voucherCell.removeFromCartButton.tag = indexPath.row
-        voucherCell.removeFromCartButton.addTarget(self, action: "removeFromCart:", forControlEvents: .TouchUpInside)
+        voucherCell.removeFromCartButton.addTarget(self, action: #selector(VoucherViewController.removeFromCart(_:)), for: .touchUpInside)
         
-        if contains(cart.cartVouchers, indexPath.row) {
-            voucherCell.removeFromCartButton.hidden = false
-            voucherCell.addToCartButton.hidden = true
+        if cart.cartVouchers.contains( indexPath.row) {
+            voucherCell.removeFromCartButton.isHidden = false
+            voucherCell.addToCartButton.isHidden = true
         } else {
-            voucherCell.removeFromCartButton.hidden = true
-            voucherCell.addToCartButton.hidden = false
+            voucherCell.removeFromCartButton.isHidden = true
+            voucherCell.addToCartButton.isHidden = false
         }
         
         return voucherCell
@@ -50,7 +50,7 @@ class VoucherViewController: UIViewController, UICollectionViewDataSource, UICol
     var cart = CartBrain()
     @IBOutlet weak var voucherErrorMessage: UILabel!
     
-    func addToCart(sender: UIButton) {
+    func addToCart(_ sender: UIButton) {
         let selectedVoucher = sender.tag
         voucherErrorMessage.text = ""
         self.checkVoucher(selectedVoucher)
@@ -58,15 +58,15 @@ class VoucherViewController: UIViewController, UICollectionViewDataSource, UICol
         voucherCollection.reloadData()
     }
     
-    func removeFromCart(sender: UIButton) {
+    func removeFromCart(_ sender: UIButton) {
         let selectedVoucher = sender.tag
-        cart.removeObject(selectedVoucher, fromArray: &cart.cartVouchers)
+        cart.removeObject(object: selectedVoucher, array: &cart.cartVouchers)
         updateCartDisplay()
         voucherCollection.reloadData()
     }
     
     // check voucher
-    func checkVoucher(selectedVoucher: Int) {
+    func checkVoucher(_ selectedVoucher: Int) {
         if cart.checkVoucher(selectedVoucher) {
             cart.cartVouchers.append(selectedVoucher)
         } else {
@@ -79,7 +79,7 @@ class VoucherViewController: UIViewController, UICollectionViewDataSource, UICol
     @IBOutlet weak var cartTotal: UILabel!
 
     func updateCartDisplay() {
-        cartItemCount.setTitle("\(cart.cartProducts.count)", forState: UIControlState.Normal)
+        cartItemCount.setTitle("\(cart.cartProducts.count)", for: UIControlState())
         cart.totalCart()
         cartTotal.text = "£" + String.localizedStringWithFormat("%.2f", cart.total)
     }
@@ -95,7 +95,7 @@ class VoucherViewController: UIViewController, UICollectionViewDataSource, UICol
         if passedTotal != nil {
             cartTotal.text = passedTotal
             cart.cartProducts = passedCartContents
-            cartItemCount.setTitle("\(cart.cartProducts.count)", forState: UIControlState.Normal)
+            cartItemCount.setTitle("\(cart.cartProducts.count)", for: UIControlState())
         }
         
         if passedVouchers != nil {
@@ -103,9 +103,9 @@ class VoucherViewController: UIViewController, UICollectionViewDataSource, UICol
         }
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject!) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any!) {
         if (segue.identifier == "segueFromVouchers") {
-            var svc = segue.destinationViewController as! ProductViewController;
+            let svc = segue.destination as! ProductViewController;
             
             svc.passedTotalFromVouchers = cartTotal.text
             svc.passedCartContentsFromVouchers = cart.cartProducts

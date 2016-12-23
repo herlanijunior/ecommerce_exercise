@@ -38,8 +38,8 @@ class eCommerceExerciseTests: XCTestCase {
     
     func testRemoveItemFromCart() {
         cart.cartProducts.append(0)
-        cart.removeObject(0, fromArray: &cart.cartProducts)
-        let cartCount = cart.cartProducts.count
+        cart.removeObject(object: 0, array: &cart.cartProducts)
+        //let cartCount = cart.cartProducts.count
     }
 
 }
